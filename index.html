@@ -12,19 +12,23 @@
 <meta name="theme-color" content="#1794e2">
 <link rel="manifest" href="manifest.json">
 
+<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
-    --bg-color: #1794e2;
-    --text-color: white;
+    --bg-image: url("img/flag-bosnia.jpg");
 }
 
 body {
     margin: 0;
-    background-color: var(--bg-color);
-    font-family: Roboto, sans-serif;
-    color: var(--text-color);
+    min-height: 100vh;
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    font-family: "Roboto", sans-serif;
+    color: white;
 }
 
 .menu {
@@ -33,12 +37,15 @@ body {
     left: 16px;
 }
 
+.menu button {
+    padding: 8px 14px;
+    font-size: 16px;
+    border-radius: 20px;
+}
+
 .menu-panel {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 260px;
-    height: 100vh;
+    inset: 0;
     background: rgba(0,0,0,0.9);
     padding: 20px;
     display: none;
@@ -46,13 +53,22 @@ body {
     gap: 14px;
 }
 
+.menu-panel button, .menu-panel select {
+    padding: 10px;
+    font-size: 16px;
+}
+
 .container {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    gap: 30px;
+    justify-content: center;
+    gap: 25px;
+}
+
+img {
+    max-width: 220px;
 }
 
 .timer {
@@ -60,40 +76,28 @@ body {
     font-weight: bold;
 }
 
-.controls, .adjust {
+.adjust, .controls {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+}
+
+.adjust button {
+    width: 60px;
+    font-size: 22px;
 }
 
 .controls button {
     width: 120px;
-    padding: 15px;
-}
-
-/* 🔔 POPUP */
-.popup {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 999;
-}
-
-.popup-box {
-    background: white;
-    color: black;
-    padding: 30px;
-    border-radius: 12px;
-    text-align: center;
-    width: 80%;
-    max-width: 300px;
+    font-size: 18px;
+    padding: 14px;
 }
 </style>
 </head>
 
 <body>
+
+<!-- AUDIO -->
+<audio id="alarmSound" src="img/beep.mp3" preload="auto" loop></audio>
 
 <div class="menu">
     <button onclick="toggleMenu()">☰ Menü</button>
@@ -108,28 +112,27 @@ body {
     <hr>
 
     <strong>Design</strong>
-    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-
     <select onchange="changeBackground(this.value)">
-        <option value="#1794e2">Blau</option>
-        <option value="#2ecc71">Grün</option>
-        <option value="#e67e22">Orange</option>
-        <option value="#9b59b6">Lila</option>
+        <option value="bosnia">🇧🇦 Bosnien</option>
+        <option value="albania">🇦🇱 Albanien</option>
+        <option value="croatia">🇭🇷 Kroatien</option>
+        <option value="turkey">🇹🇷 Türkei</option>
     </select>
 
     <hr>
 
     <strong>Sound</strong>
     <select onchange="setSound(this.value)">
-        <option value="normal">🔊 Normal</option>
-        <option value="quiet">🔈 Stumm</option>
+        <option value="normal">🔊 Sound</option>
+        <option value="vibrate">📳 Vibration</option>
+        <option value="off">🔕 Aus</option>
     </select>
 
     <button onclick="toggleMenu()">Schließen</button>
 </div>
 
 <div class="container">
-    <img src="img/egg.png" width="200">
+    <img src="img/egg.png" alt="Ei">
 
     <div class="timer" id="timer">07:00</div>
 
@@ -139,23 +142,9 @@ body {
     </div>
 
     <div class="controls">
-        <button onclick="startTimer()">▶️ Start</button>
-        <button onclick="stopTimer()">⏹️ Stop</button>
+        <button onclick="startTimer()">▶ Start</button>
+        <button onclick="stopTimer()">⏸ Stop</button>
         <button onclick="resetTimer()">🔄 Reset</button>
-    </div>
-</div>
-
-<!-- 🔊 AUDIO -->
-<audio id="alarmSound" loop>
-    <source src="img/beep.mp3" type="audio/mpeg">
-</audio>
-
-<!-- 🔔 POPUP -->
-<div class="popup" id="popup">
-    <div class="popup-box">
-        <h2>🥚 Ei fertig!</h2>
-        <p>Guten Appetit! 😊</p>
-        <button onclick="confirmDone()">OK</button>
     </div>
 </div>
 
@@ -164,21 +153,19 @@ let time = 420;
 let defaultTime = 420;
 let interval = null;
 let soundMode = "normal";
-let dark = false;
 
 const sound = document.getElementById("alarmSound");
-const popup = document.getElementById("popup");
 
 function updateDisplay() {
-    const min = String(Math.floor(time / 60)).padStart(2, '0');
-    const sec = String(time % 60).padStart(2, '0');
-    timer.innerText = `${min}:${sec}`;
+    const m = String(Math.floor(time / 60)).padStart(2, "0");
+    const s = String(time % 60).padStart(2, "0");
+    timer.innerText = `${m}:${s}`;
 }
 
 function startTimer() {
     if (interval) return;
 
-    // iOS Audio freischalten
+    // iOS Audio Unlock
     sound.muted = true;
     sound.play().then(() => {
         sound.pause();
@@ -191,25 +178,9 @@ function startTimer() {
             time--;
             updateDisplay();
         } else {
-            stopTimer();
-            notify();
+            finishTimer();
         }
     }, 1000);
-}
-
-function notify() {
-    if (soundMode !== "quiet") {
-        sound.currentTime = 0;
-        sound.play();
-    }
-    popup.style.display = "flex";
-}
-
-function confirmDone() {
-    sound.pause();
-    sound.currentTime = 0;
-    popup.style.display = "none";
-    resetTimer();
 }
 
 function stopTimer() {
@@ -219,40 +190,61 @@ function stopTimer() {
 
 function resetTimer() {
     stopTimer();
+    sound.pause();
+    sound.currentTime = 0;
     time = defaultTime;
     updateDisplay();
 }
 
-function setPreset(sec) {
+function finishTimer() {
     stopTimer();
+
+    if (soundMode === "normal") {
+        sound.play();
+    } else if (soundMode === "vibrate" && navigator.vibrate) {
+        navigator.vibrate([400,200,400,200,400]);
+    }
+
+    setTimeout(() => {
+        alert("⏰ Ei fertig!");
+        resetTimer();
+    }, 300);
+}
+
+function setPreset(sec) {
+    resetTimer();
     time = sec;
     defaultTime = sec;
     updateDisplay();
 }
 
-function changeTime(val) {
+function changeTime(delta) {
     if (interval) return;
-    time = Math.max(0, time + val);
+    time = Math.max(0, time + delta);
     defaultTime = time;
     updateDisplay();
 }
 
 function toggleMenu() {
-    menuPanel.style.display = menuPanel.style.display === "flex" ? "none" : "flex";
-}
-
-function toggleDarkMode() {
-    dark = !dark;
-    document.body.style.backgroundColor = dark ? "#111" : getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
-}
-
-function changeBackground(color) {
-    document.documentElement.style.setProperty('--bg-color', color);
-    if (!dark) document.body.style.backgroundColor = color;
+    const p = menuPanel;
+    p.style.display = p.style.display === "flex" ? "none" : "flex";
 }
 
 function setSound(mode) {
     soundMode = mode;
+}
+
+function changeBackground(country) {
+    const map = {
+        bosnia: "flag-bosnia.jpg",
+        albania: "flag-albania.jpg",
+        croatia: "flag-croatia.jpg",
+        turkey: "flag-turkey.jpg"
+    };
+    document.documentElement.style.setProperty(
+        "--bg-image",
+        `url("img/${map[country]}")`
+    );
 }
 
 updateDisplay();
