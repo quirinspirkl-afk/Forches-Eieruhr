@@ -168,18 +168,25 @@
     }
 
     function startTimer() {
-        if (interval) return;
-        interval = setInterval(() => {
-            if (time > 0) {
-                time--;
-                updateDisplay();
-            } else {
-                stopTimer();
-                notify();
-            }
-        }, 1000);
-    }
+    if (interval) return;
 
+    // 🔓 iOS Audio freischalten
+    const sound = document.getElementById("alarmSound");
+    sound.play().then(() => {
+        sound.pause();
+        sound.currentTime = 0;
+    }).catch(() => {});
+
+    interval = setInterval(() => {
+        if (time > 0) {
+            time--;
+            updateDisplay();
+        } else {
+            stopTimer();
+            notify();
+        }
+    }, 1000);
+}
     function stopTimer() {
         clearInterval(interval);
         interval = null;
