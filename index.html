@@ -1,119 +1,86 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eieruhr</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eieruhr</title>
 
-    <!-- PWA / App Mode -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Eieruhr">
-    <meta name="theme-color" content="#1794e2">
-    <link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Eieruhr">
+<meta name="theme-color" content="#1794e2">
+<link rel="manifest" href="manifest.json">
 
-    <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --bg-color: #1794e2;
-            --text-color: white;
-        }
+<style>
+:root {
+    --bg-color: #1794e2;
+    --text-color: white;
+}
 
-        body {
-            margin: 0;
-            background-color: var(--bg-color);
-            font-family: "Roboto", sans-serif;
-            color: var(--text-color);
-        }
+body {
+    margin: 0;
+    background-color: var(--bg-color);
+    font-family: Roboto, sans-serif;
+    color: var(--text-color);
+}
 
-        .menu {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-        }
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
 
-        .menu-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 260px;
-            height: 100vh;
-            background: rgba(0,0,0,0.9);
-            padding: 20px;
-            display: none;
-            flex-direction: column;
-            gap: 14px;
-        }
+.timer {
+    font-size: 64px;
+    font-weight: bold;
+}
 
-        .container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-        }
+.controls, .adjust {
+    display: flex;
+    gap: 10px;
+}
 
-        img { max-width: 220px; }
+button {
+    padding: 15px 20px;
+    font-size: 18px;
+}
 
-        .timer {
-            font-size: 64px;
-            font-weight: bold;
-        }
+/* 🔔 POPUP */
+.popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
 
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
+.popup-content {
+    background: white;
+    color: black;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    width: 80%;
+    max-width: 300px;
+}
 
-        .controls button {
-            padding: 15px 20px;
-            font-size: 18px;
-            width: 120px;
-        }
-
-        .adjust {
-            display: flex;
-            gap: 10px;
-        }
-
-        .adjust button {
-            padding: 10px 18px;
-            font-size: 20px;
-            width: 60px;
-        }
-    </style>
+.popup-content h2 {
+    margin-top: 0;
+}
+</style>
 </head>
 
 <body>
 
-<div class="menu">
-    <button onclick="toggleMenu()">☰ Menü</button>
-</div>
-
-<div class="menu-panel" id="menuPanel">
-    <strong>Garzeiten</strong>
-    <button onclick="setPreset(300)">🥚 Weich (5:00)</button>
-    <button onclick="setPreset(420)">🥚 Wachsweich (7:00)</button>
-    <button onclick="setPreset(600)">🥚 Hart (10:00)</button>
-
-    <hr>
-
-    <strong>Sound</strong>
-    <select onchange="setSound(this.value)">
-        <option value="normal">🔊 Normal</option>
-        <option value="quiet">🔈 Leise</option>
-    </select>
-
-    <button onclick="toggleMenu()">Schließen</button>
-</div>
-
 <div class="container">
-    <img src="img/egg.png" alt="Ei">
+    <img src="img/egg.png" width="200">
 
     <div class="timer" id="timer">07:00</div>
 
@@ -129,92 +96,89 @@
     </div>
 </div>
 
-<!-- 🔊 AUDIO (ENTSCHEIDEND!) -->
-<audio id="alarmSound" preload="auto">
+<!-- 🔊 AUDIO -->
+<audio id="alarmSound" loop>
     <source src="img/beep.mp3" type="audio/mpeg">
 </audio>
 
+<!-- 🔔 POPUP -->
+<div class="popup" id="popup">
+    <div class="popup-content">
+        <h2>🥚 Ei fertig!</h2>
+        <p>Guten Appetit 😄</p>
+        <button onclick="confirmDone()">OK</button>
+    </div>
+</div>
+
 <script>
-    let time = 420;
-    let defaultTime = 420;
-    let interval = null;
-    let soundMode = "normal";
+let time = 420;
+let defaultTime = 420;
+let interval = null;
 
-    function updateDisplay() {
-        const min = String(Math.floor(time / 60)).padStart(2, '0');
-        const sec = String(time % 60).padStart(2, '0');
-        document.getElementById("timer").innerText = `${min}:${sec}`;
-    }
+const sound = document.getElementById("alarmSound");
+const popup = document.getElementById("popup");
 
-    function startTimer() {
-        if (interval) return;
+function updateDisplay() {
+    const min = String(Math.floor(time / 60)).padStart(2, '0');
+    const sec = String(time % 60).padStart(2, '0');
+    document.getElementById("timer").innerText = `${min}:${sec}`;
+}
 
-        // 🔓 iOS Audio freischalten
-        const sound = document.getElementById("alarmSound");
-        sound.muted = true;
-        sound.play().then(() => {
-            sound.pause();
-            sound.currentTime = 0;
-            sound.muted = false;
-        }).catch(() => {});
+function startTimer() {
+    if (interval) return;
 
-        interval = setInterval(() => {
-            if (time > 0) {
-                time--;
-                updateDisplay();
-            } else {
-                stopTimer();
-                notify();
-            }
-        }, 1000);
-    }
+    // 🔓 iOS Audio freischalten
+    sound.muted = true;
+    sound.play().then(() => {
+        sound.pause();
+        sound.currentTime = 0;
+        sound.muted = false;
+    }).catch(()=>{});
 
-    function stopTimer() {
-        clearInterval(interval);
-        interval = null;
-    }
-
-    function resetTimer() {
-        stopTimer();
-        time = defaultTime;
-        updateDisplay();
-    }
-
-    function setPreset(seconds) {
-        stopTimer();
-        time = seconds;
-        defaultTime = seconds;
-        updateDisplay();
-    }
-
-    function changeTime(amount) {
-        if (interval) return;
-        time = Math.max(0, time + amount);
-        defaultTime = time;
-        updateDisplay();
-    }
-
-    function notify() {
-        const sound = document.getElementById("alarmSound");
-        if (soundMode !== "quiet") {
-            sound.currentTime = 0;
-            sound.play().catch(() => {});
+    interval = setInterval(() => {
+        if (time > 0) {
+            time--;
+            updateDisplay();
+        } else {
+            stopTimer();
+            notify();
         }
-    }
+    }, 1000);
+}
 
-    function toggleMenu() {
-        const panel = document.getElementById("menuPanel");
-        panel.style.display = panel.style.display === "flex" ? "none" : "flex";
-    }
+function stopTimer() {
+    clearInterval(interval);
+    interval = null;
+}
 
-    function setSound(mode) {
-        soundMode = mode;
-    }
-
+function resetTimer() {
+    stopTimer();
+    time = defaultTime;
     updateDisplay();
+}
+
+function changeTime(amount) {
+    if (interval) return;
+    time = Math.max(0, time + amount);
+    defaultTime = time;
+    updateDisplay();
+}
+
+function notify() {
+    sound.currentTime = 0;
+    sound.play();
+    popup.style.display = "flex";
+}
+
+function confirmDone() {
+    sound.pause();
+    sound.currentTime = 0;
+    popup.style.display = "none";
+    resetTimer();
+}
+
+updateDisplay();
 </script>
 
-</body>
-</html>
 </body>
 </html>
