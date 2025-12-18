@@ -36,11 +36,6 @@
             left: 16px;
         }
 
-        .menu button {
-            font-size: 16px;
-            padding: 6px 10px;
-        }
-
         .menu-panel {
             position: fixed;
             top: 0;
@@ -54,11 +49,6 @@
             gap: 14px;
         }
 
-        .menu-panel button, .menu-panel select {
-            padding: 8px;
-            font-size: 16px;
-        }
-
         .container {
             min-height: 100vh;
             display: flex;
@@ -68,9 +58,7 @@
             gap: 30px;
         }
 
-        img {
-            max-width: 220px;
-        }
+        img { max-width: 220px; }
 
         .timer {
             font-size: 64px;
@@ -115,23 +103,10 @@
 
     <hr>
 
-    <strong>Design</strong>
-    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-
-    <select onchange="changeBackground(this.value)">
-        <option value="#1794e2">Blau</option>
-        <option value="#2ecc71">Grün</option>
-        <option value="#e67e22">Orange</option>
-        <option value="#9b59b6">Lila</option>
-    </select>
-
-    <hr>
-
     <strong>Sound</strong>
     <select onchange="setSound(this.value)">
         <option value="normal">🔊 Normal</option>
         <option value="quiet">🔈 Leise</option>
-        <option value="vibrate">📳 Vibration</option>
     </select>
 
     <button onclick="toggleMenu()">Schließen</button>
@@ -154,12 +129,16 @@
     </div>
 </div>
 
+<!-- 🔊 AUDIO (ENTSCHEIDEND!) -->
+<audio id="alarmSound" preload="auto">
+    <source src="img/beep.mp3" type="audio/mpeg">
+</audio>
+
 <script>
     let time = 420;
     let defaultTime = 420;
     let interval = null;
     let soundMode = "normal";
-    let dark = false;
 
     function updateDisplay() {
         const min = String(Math.floor(time / 60)).padStart(2, '0');
@@ -167,31 +146,29 @@
         document.getElementById("timer").innerText = `${min}:${sec}`;
     }
 
-   function startTimer() {
-    if (interval) return;
+    function startTimer() {
+        if (interval) return;
 
-    // 🔓 iOS Audio freischalten (non-blocking)
-    const sound = document.getElementById("alarmSound");
-    try {
+        // 🔓 iOS Audio freischalten
+        const sound = document.getElementById("alarmSound");
         sound.muted = true;
-        sound.play();
-        sound.pause();
-        sound.currentTime = 0;
-        sound.muted = false;
-    } catch (e) {
-        console.log("Audio unlock failed");
+        sound.play().then(() => {
+            sound.pause();
+            sound.currentTime = 0;
+            sound.muted = false;
+        }).catch(() => {});
+
+        interval = setInterval(() => {
+            if (time > 0) {
+                time--;
+                updateDisplay();
+            } else {
+                stopTimer();
+                notify();
+            }
+        }, 1000);
     }
 
-    interval = setInterval(() => {
-        if (time > 0) {
-            time--;
-            updateDisplay();
-        } else {
-            stopTimer();
-            notify();
-        }
-    }, 1000);
-}
     function stopTimer() {
         clearInterval(interval);
         interval = null;
@@ -218,26 +195,16 @@
     }
 
     function notify() {
-        if (soundMode === "vibrate" && navigator.vibrate) {
-            navigator.vibrate([300, 200, 300]);
-        } else {
-            alert("⏰ Ei fertig!");
+        const sound = document.getElementById("alarmSound");
+        if (soundMode !== "quiet") {
+            sound.currentTime = 0;
+            sound.play().catch(() => {});
         }
     }
 
     function toggleMenu() {
         const panel = document.getElementById("menuPanel");
         panel.style.display = panel.style.display === "flex" ? "none" : "flex";
-    }
-
-    function toggleDarkMode() {
-        dark = !dark;
-        document.body.style.backgroundColor = dark ? "#111" : getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
-    }
-
-    function changeBackground(color) {
-        document.documentElement.style.setProperty('--bg-color', color);
-        if (!dark) document.body.style.backgroundColor = color;
     }
 
     function setSound(mode) {
@@ -247,5 +214,7 @@
     updateDisplay();
 </script>
 
+</body>
+</html>
 </body>
 </html>
