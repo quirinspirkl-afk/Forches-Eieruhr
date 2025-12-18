@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eieruhr</title>
 
+    <!-- PWA / App Mode -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Eieruhr">
+    <meta name="theme-color" content="#1794e2">
+    <link rel="manifest" href="manifest.json">
+
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -135,13 +142,11 @@
 
     <div class="timer" id="timer">07:00</div>
 
-    <!-- + / - Buttons -->
     <div class="adjust">
         <button onclick="changeTime(-30)">−</button>
         <button onclick="changeTime(30)">+</button>
     </div>
 
-    <!-- Steuerung -->
     <div class="controls">
         <button onclick="startTimer()">▶ Start</button>
         <button onclick="stopTimer()">⏸ Stop</button>
@@ -194,7 +199,7 @@
     }
 
     function changeTime(amount) {
-        if (interval) return; // während Lauf nicht verstellen
+        if (interval) return;
         time = Math.max(0, time + amount);
         defaultTime = time;
         updateDisplay();
