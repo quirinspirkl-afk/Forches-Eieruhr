@@ -69,8 +69,8 @@ img {
     top: 90px;
     left: 50%;
     transform: translateX(-50%);
-    width: 190px;
-    height: 190px;
+    width: 140px;
+    height: 140px;
     object-fit: cover;
     border-radius: 50%;
     border: 3px solid rgba(255,255,255,0.6);
@@ -149,7 +149,8 @@ img {
     <button onclick="toggleMenu()">Schließen</button>
 </div>
 
-<img src="img/egg.png" alt="Ei">
+<!-- 🔁 Bild mit ID -->
+<img id="countryImage" src="img/egg.png" alt="Ei">
 
 <div class="container">
     <div class="timer" id="timer">07:00</div>
@@ -174,23 +175,27 @@ let soundMode = "normal";
 
 const sound = document.getElementById("alarmSound");
 
-/* Zuordnung Flagge → Hymne */
+/* Flagge + Hymne + Bild pro Land */
 const countryConfig = {
     bosnia: {
         bg: "flag-bosnia.jpg",
-        anthem: "anthem-bosnia.mp3"
+        anthem: "anthem-bosnia.mp3",
+        image: "egg-bosnia.png"
     },
     albania: {
         bg: "flag-albania.jpg",
-        anthem: "anthem-albania.mp3"
+        anthem: "anthem-albania.mp3",
+        image: "egg-albania.png"
     },
     croatia: {
         bg: "flag-croati.jpg",
-        anthem: "anthem-croatia.mp3"
+        anthem: "anthem-croatia.mp3",
+        image: "egg-croatia.png"
     },
     turkey: {
         bg: "flag-turkey.jpg",
-        anthem: "anthem-turkey.mp3"
+        anthem: "anthem-turkey.mp3",
+        image: "egg-turkey.png"
     }
 };
 
@@ -281,6 +286,8 @@ function changeBackground(country) {
     sound.pause();
     sound.currentTime = 0;
     sound.src = `img/${cfg.anthem}`;
+
+    document.getElementById("countryImage").src = `img/${cfg.image}`;
 }
 
 updateDisplay();
