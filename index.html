@@ -31,6 +31,7 @@ body {
     color: white;
 }
 
+/* Menü */
 .menu {
     position: absolute;
     top: 16px;
@@ -43,6 +44,7 @@ body {
     border-radius: 20px;
 }
 
+/* Menü Panel */
 .menu-panel {
     position: fixed;
     inset: 0;
@@ -53,29 +55,41 @@ body {
     gap: 14px;
 }
 
-.menu-panel button, .menu-panel select {
+.menu-panel button,
+.menu-panel select {
     padding: 10px;
     font-size: 16px;
 }
 
+/* Inhalt */
 .container {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 25px;
+    gap: 20px;
+    padding-top: 40px;
 }
 
+/* 👤 Bild */
 img {
-    max-width: 220px;
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.2);
 }
 
+/* ⏱️ Timer */
 .timer {
     font-size: 64px;
-    font-weight: bold;
+    font-weight: 700;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
+/* Buttons */
 .adjust, .controls {
     display: flex;
     gap: 12px;
@@ -96,7 +110,7 @@ img {
 
 <body>
 
-<!-- AUDIO -->
+<!-- 🔊 Audio -->
 <audio id="alarmSound" src="img/beep.mp3" preload="auto" loop></audio>
 
 <div class="menu">
@@ -226,8 +240,8 @@ function changeTime(delta) {
 }
 
 function toggleMenu() {
-    const p = menuPanel;
-    p.style.display = p.style.display === "flex" ? "none" : "flex";
+    menuPanel.style.display =
+        menuPanel.style.display === "flex" ? "none" : "flex";
 }
 
 function setSound(mode) {
