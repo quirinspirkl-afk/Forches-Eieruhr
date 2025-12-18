@@ -63,11 +63,11 @@ body {
     font-size: 16px;
 }
 
-/* Bild oben links */
+/* Bild */
 img {
     position: absolute;
-    top: 90px;                 /* Höhe bleibt gleich */
-    left: 50%;                 /* Mitte des Bildschirms */
+    top: 90px;
+    left: 50%;
     transform: translateX(-50%);
     width: 140px;
     height: 140px;
@@ -85,17 +85,15 @@ img {
     align-items: center;
     justify-content: flex-start;
     gap: 55px;
-    padding-top: 380px; /* Platz für Bild */
+    padding-top: 380px;
 }
 
-/* Timer */
 .timer {
     font-size: 64px;
     font-weight: 700;
     text-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
-/* Buttons */
 .adjust,
 .controls {
     display: flex;
@@ -117,8 +115,8 @@ img {
 
 <body>
 
-<!-- Audio -->
-<audio id="alarmSound" src="img/beep.mp3" preload="auto" loop></audio>
+<!-- Dynamischer Sound -->
+<audio id="alarmSound" preload="auto" loop></audio>
 
 <div class="menu">
     <button onclick="toggleMenu()">☰ Menü</button>
@@ -176,6 +174,26 @@ let soundMode = "normal";
 
 const sound = document.getElementById("alarmSound");
 
+/* Zuordnung Flagge → Hymne */
+const countryConfig = {
+    bosnia: {
+        bg: "flag-bosnia.jpg",
+        anthem: "anthem-bosnia.mp3"
+    },
+    albania: {
+        bg: "flag-albania.jpg",
+        anthem: "anthem-albania.mp3"
+    },
+    croatia: {
+        bg: "flag-croatia.jpg",
+        anthem: "anthem-croatia.mp3"
+    },
+    turkey: {
+        bg: "flag-turkey.jpg",
+        anthem: "anthem-turkey.mp3"
+    }
+};
+
 function updateDisplay() {
     const m = String(Math.floor(time / 60)).padStart(2, "0");
     const s = String(time % 60).padStart(2, "0");
@@ -221,8 +239,6 @@ function finishTimer() {
 
     if (soundMode === "normal") {
         sound.play();
-    } else if (soundMode === "vibrate" && navigator.vibrate) {
-        navigator.vibrate([400,200,400,200,400]);
     }
 
     setTimeout(() => {
@@ -255,19 +271,20 @@ function setSound(mode) {
 }
 
 function changeBackground(country) {
-    const map = {
-        bosnia: "flag-bosnia.jpg",
-        albania: "flag-albania.jpg",
-        croatia: "flag-croati.jpg",
-        turkey: "flag-turkey.jpg"
-    };
+    const cfg = countryConfig[country];
+
     document.documentElement.style.setProperty(
         "--bg-image",
-        `url("img/${map[country]}")`
+        `url("img/${cfg.bg}")`
     );
+
+    sound.pause();
+    sound.currentTime = 0;
+    sound.src = `img/${cfg.anthem}`;
 }
 
 updateDisplay();
+changeBackground("bosnia"); // Default
 </script>
 
 </body>
