@@ -66,8 +66,9 @@ body {
 /* Bild oben links */
 img {
     position: absolute;
-    top: 90px;
-    left: 20px;
+    top: 90px;                 /* Höhe bleibt gleich */
+    left: 50%;                 /* Mitte des Bildschirms */
+    transform: translateX(-50%);
     width: 140px;
     height: 140px;
     object-fit: cover;
