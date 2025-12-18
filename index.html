@@ -122,7 +122,7 @@ body {
     <strong>Sound</strong>
     <select onchange="setSound(this.value)">
         <option value="normal">🔊 Normal</option>
-        <option value="quiet">🔈 Leise</option>
+        <option value="quiet">🔈 Stumm</option>
         <option value="vibrate">📳 Vibration</option>
     </select>
 
@@ -140,8 +140,8 @@ body {
     </div>
 
     <div class="controls">
-        <button onclick="startTimer()">▶ Start</button>
-        <button onclick="stopTimer()">⏸ Stop</button>
+        <button onclick="startTimer()">▶️ Start</button>
+        <button onclick="stopTimer()">⏹️ Stop</button>
         <button onclick="resetTimer()">🔄 Reset</button>
     </div>
 </div>
@@ -155,7 +155,7 @@ body {
 <div class="popup" id="popup">
     <div class="popup-box">
         <h2>🥚 Ei fertig!</h2>
-        <p>Guten Appetit 😊</p>
+        <p>Guten Appetit! 😊</p>
         <button onclick="confirmDone()">OK</button>
     </div>
 </div>
