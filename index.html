@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Eieruhr</title>
 
+<!-- PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Eieruhr">
@@ -26,6 +27,25 @@ body {
     color: var(--text-color);
 }
 
+.menu {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+}
+
+.menu-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: rgba(0,0,0,0.9);
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+}
+
 .container {
     min-height: 100vh;
     display: flex;
@@ -45,23 +65,23 @@ body {
     gap: 10px;
 }
 
-button {
-    padding: 15px 20px;
-    font-size: 18px;
+.controls button {
+    width: 120px;
+    padding: 15px;
 }
 
 /* 🔔 POPUP */
 .popup {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.75);
     display: none;
     justify-content: center;
     align-items: center;
     z-index: 999;
 }
 
-.popup-content {
+.popup-box {
     background: white;
     color: black;
     padding: 30px;
@@ -70,14 +90,44 @@ button {
     width: 80%;
     max-width: 300px;
 }
-
-.popup-content h2 {
-    margin-top: 0;
-}
 </style>
 </head>
 
 <body>
+
+<div class="menu">
+    <button onclick="toggleMenu()">☰ Menü</button>
+</div>
+
+<div class="menu-panel" id="menuPanel">
+    <strong>Garzeiten</strong>
+    <button onclick="setPreset(300)">🥚 Weich (5:00)</button>
+    <button onclick="setPreset(420)">🥚 Wachsweich (7:00)</button>
+    <button onclick="setPreset(600)">🥚 Hart (10:00)</button>
+
+    <hr>
+
+    <strong>Design</strong>
+    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
+    <select onchange="changeBackground(this.value)">
+        <option value="#1794e2">Blau</option>
+        <option value="#2ecc71">Grün</option>
+        <option value="#e67e22">Orange</option>
+        <option value="#9b59b6">Lila</option>
+    </select>
+
+    <hr>
+
+    <strong>Sound</strong>
+    <select onchange="setSound(this.value)">
+        <option value="normal">🔊 Normal</option>
+        <option value="quiet">🔈 Leise</option>
+        <option value="vibrate">📳 Vibration</option>
+    </select>
+
+    <button onclick="toggleMenu()">Schließen</button>
+</div>
 
 <div class="container">
     <img src="img/egg.png" width="200">
@@ -103,9 +153,9 @@ button {
 
 <!-- 🔔 POPUP -->
 <div class="popup" id="popup">
-    <div class="popup-content">
+    <div class="popup-box">
         <h2>🥚 Ei fertig!</h2>
-        <p>Guten Appetit 😄</p>
+        <p>Guten Appetit 😊</p>
         <button onclick="confirmDone()">OK</button>
     </div>
 </div>
@@ -114,6 +164,8 @@ button {
 let time = 420;
 let defaultTime = 420;
 let interval = null;
+let soundMode = "normal";
+let dark = false;
 
 const sound = document.getElementById("alarmSound");
 const popup = document.getElementById("popup");
@@ -121,13 +173,13 @@ const popup = document.getElementById("popup");
 function updateDisplay() {
     const min = String(Math.floor(time / 60)).padStart(2, '0');
     const sec = String(time % 60).padStart(2, '0');
-    document.getElementById("timer").innerText = `${min}:${sec}`;
+    timer.innerText = `${min}:${sec}`;
 }
 
 function startTimer() {
     if (interval) return;
 
-    // 🔓 iOS Audio freischalten
+    // iOS Audio freischalten
     sound.muted = true;
     sound.play().then(() => {
         sound.pause();
@@ -146,6 +198,21 @@ function startTimer() {
     }, 1000);
 }
 
+function notify() {
+    if (soundMode !== "quiet") {
+        sound.currentTime = 0;
+        sound.play();
+    }
+    popup.style.display = "flex";
+}
+
+function confirmDone() {
+    sound.pause();
+    sound.currentTime = 0;
+    popup.style.display = "none";
+    resetTimer();
+}
+
 function stopTimer() {
     clearInterval(interval);
     interval = null;
@@ -157,24 +224,36 @@ function resetTimer() {
     updateDisplay();
 }
 
-function changeTime(amount) {
+function setPreset(sec) {
+    stopTimer();
+    time = sec;
+    defaultTime = sec;
+    updateDisplay();
+}
+
+function changeTime(val) {
     if (interval) return;
-    time = Math.max(0, time + amount);
+    time = Math.max(0, time + val);
     defaultTime = time;
     updateDisplay();
 }
 
-function notify() {
-    sound.currentTime = 0;
-    sound.play();
-    popup.style.display = "flex";
+function toggleMenu() {
+    menuPanel.style.display = menuPanel.style.display === "flex" ? "none" : "flex";
 }
 
-function confirmDone() {
-    sound.pause();
-    sound.currentTime = 0;
-    popup.style.display = "none";
-    resetTimer();
+function toggleDarkMode() {
+    dark = !dark;
+    document.body.style.backgroundColor = dark ? "#111" : getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+}
+
+function changeBackground(color) {
+    document.documentElement.style.setProperty('--bg-color', color);
+    if (!dark) document.body.style.backgroundColor = color;
+}
+
+function setSound(mode) {
+    soundMode = mode;
 }
 
 updateDisplay();
