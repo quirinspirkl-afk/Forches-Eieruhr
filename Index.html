@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eieruhr</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #1794e2;
+            --text-color: white;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            font-family: "Roboto", sans-serif;
+            color: var(--text-color);
+        }
+
+        .menu {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+        }
+
+        .menu button {
+            font-size: 16px;
+            padding: 6px 10px;
+        }
+
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .menu-panel button, .menu-panel select {
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        img {
+            max-width: 220px;
+        }
+
+        .timer {
+            font-size: 64px;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .controls button {
+            padding: 15px 20px;
+            font-size: 18px;
+            width: 120px;
+        }
+
+        .adjust {
+            display: flex;
+            gap: 10px;
+        }
+
+        .adjust button {
+            padding: 10px 18px;
+            font-size: 20px;
+            width: 60px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="menu">
+    <button onclick="toggleMenu()">☰ Menü</button>
+</div>
+
+<div class="menu-panel" id="menuPanel">
+    <strong>Garzeiten</strong>
+    <button onclick="setPreset(300)">🥚 Weich (5:00)</button>
+    <button onclick="setPreset(420)">🥚 Wachsweich (7:00)</button>
+    <button onclick="setPreset(600)">🥚 Hart (10:00)</button>
+
+    <hr>
+
+    <strong>Design</strong>
+    <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
+    <select onchange="changeBackground(this.value)">
+        <option value="#1794e2">Blau</option>
+        <option value="#2ecc71">Grün</option>
+        <option value="#e67e22">Orange</option>
+        <option value="#9b59b6">Lila</option>
+    </select>
+
+    <hr>
+
+    <strong>Sound</strong>
+    <select onchange="setSound(this.value)">
+        <option value="normal">🔊 Normal</option>
+        <option value="quiet">🔈 Leise</option>
+        <option value="vibrate">📳 Vibration</option>
+    </select>
+
+    <button onclick="toggleMenu()">Schließen</button>
+</div>
+
+<div class="container">
+    <img src="img/egg.png" alt="Ei">
+
+    <div class="timer" id="timer">07:00</div>
+
+    <!-- + / - Buttons -->
+    <div class="adjust">
+        <button onclick="changeTime(-30)">−</button>
+        <button onclick="changeTime(30)">+</button>
+    </div>
+
+    <!-- Steuerung -->
+    <div class="controls">
+        <button onclick="startTimer()">▶ Start</button>
+        <button onclick="stopTimer()">⏸ Stop</button>
+        <button onclick="resetTimer()">🔄 Reset</button>
+    </div>
+</div>
+
+<script>
+    let time = 420;
+    let defaultTime = 420;
+    let interval = null;
+    let soundMode = "normal";
+    let dark = false;
+
+    function updateDisplay() {
+        const min = String(Math.floor(time / 60)).padStart(2, '0');
+        const sec = String(time % 60).padStart(2, '0');
+        document.getElementById("timer").innerText = `${min}:${sec}`;
+    }
+
+    function startTimer() {
+        if (interval) return;
+        interval = setInterval(() => {
+            if (time > 0) {
+                time--;
+                updateDisplay();
+            } else {
+                stopTimer();
+                notify();
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(interval);
+        interval = null;
+    }
+
+    function resetTimer() {
+        stopTimer();
+        time = defaultTime;
+        updateDisplay();
+    }
+
+    function setPreset(seconds) {
+        stopTimer();
+        time = seconds;
+        defaultTime = seconds;
+        updateDisplay();
+    }
+
+    function changeTime(amount) {
+        if (interval) return; // während Lauf nicht verstellen
+        time = Math.max(0, time + amount);
+        defaultTime = time;
+        updateDisplay();
+    }
+
+    function notify() {
+        if (soundMode === "vibrate" && navigator.vibrate) {
+            navigator.vibrate([300, 200, 300]);
+        } else {
+            alert("⏰ Ei fertig!");
+        }
+    }
+
+    function toggleMenu() {
+        const panel = document.getElementById("menuPanel");
+        panel.style.display = panel.style.display === "flex" ? "none" : "flex";
+    }
+
+    function toggleDarkMode() {
+        dark = !dark;
+        document.body.style.backgroundColor = dark ? "#111" : getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+    }
+
+    function changeBackground(color) {
+        document.documentElement.style.setProperty('--bg-color', color);
+        if (!dark) document.body.style.backgroundColor = color;
+    }
+
+    function setSound(mode) {
+        soundMode = mode;
+    }
+
+    updateDisplay();
+</script>
+
+</body>
+</html>
