@@ -167,15 +167,20 @@
         document.getElementById("timer").innerText = `${min}:${sec}`;
     }
 
-    function startTimer() {
+   function startTimer() {
     if (interval) return;
 
-    // 🔓 iOS Audio freischalten
+    // 🔓 iOS Audio freischalten (non-blocking)
     const sound = document.getElementById("alarmSound");
-    sound.play().then(() => {
+    try {
+        sound.muted = true;
+        sound.play();
         sound.pause();
         sound.currentTime = 0;
-    }).catch(() => {});
+        sound.muted = false;
+    } catch (e) {
+        console.log("Audio unlock failed");
+    }
 
     interval = setInterval(() => {
         if (time > 0) {
